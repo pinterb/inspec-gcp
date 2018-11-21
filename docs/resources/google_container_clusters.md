@@ -11,7 +11,7 @@ Use the `google_container_clusters` InSpec audit resource to test properties of 
 
 ## Syntax
 
-A `google_container_clusters` resource block collects GCP clusters by project and zone, then tests that group.
+A `google_container_clusters` resource block collects GCP clusters by project and zone (or region), then tests that group.
 
     describe google_container_clusters(project: 'chef-inspec-gcp', zone: 'europe-west2-a') do
       it { should exist }
@@ -19,7 +19,7 @@ A `google_container_clusters` resource block collects GCP clusters by project an
 
 Use this InSpec resource to enumerate IDs then test in-depth using `google_container_cluster`.
 
-    google_container_clusters(project: 'chef-inspec-gcp', zone: 'europe-west2-a').cluster_names.each do |cluster_name|
+    google_container_clusters(project: 'chef-inspec-gcp', region: 'europe-west').cluster_names.each do |cluster_name|
       describe google_container_cluster(project: 'chef-inspec-gcp', zone: 'europe-west2-a', name: cluster_name) do
         it { should exist }
       end

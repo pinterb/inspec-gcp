@@ -60,6 +60,9 @@ variable "gcp_kube_cluster_zone_extra2" {}
 variable "gcp_kube_cluster_master_user" {}
 variable "gcp_kube_cluster_master_pass" {}
 
+variable "gcp_kube_regional_cluster_name" {}
+variable "gcp_kube_cluster_region" {}
+
 variable "gcp_kms_key_ring_policy_name" {}
 variable "gcp_kms_key_ring_binding_member_name" {}
 variable "gcp_kms_crypto_key_name_policy" {}
@@ -374,7 +377,7 @@ module "mig3" {
 ##############################################################
 
 ##############################################################
-# Start of the GKE cluster example
+# Start of the GKE zonal cluster example
 ##############################################################
 
 resource "google_container_cluster" "primary" {
@@ -422,7 +425,49 @@ output "cluster_ca_certificate" {
 # requires the master node IP and tag name which could be tough to get hold of
 
 ##############################################################
-# End of the GKE cluster example
+# End of the GKE zonal cluster example
+##############################################################
+
+##############################################################
+# Start of the GKE regional cluster example
+##############################################################
+
+resource "google_container_cluster" "secondary" {
+  project = "${var.gcp_project_id}"
+  name               = "${var.gcp_kube_regional_cluster_name}"
+  zone               = "${var.gcp_kube_cluster_region}"
+  initial_node_count = 3
+
+  master_auth {
+    username = "${var.gcp_kube_cluster_master_user}"
+    password = "${var.gcp_kube_cluster_master_pass}"
+  }
+
+  node_config {
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/compute",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+    ]
+  }
+}
+
+# The following outputs allow authentication and connectivity to the regional GKE Cluster.
+output "regional_client_certificate" {
+  value = "${google_container_cluster.secondary.master_auth.0.client_certificate}"
+}
+
+output "regional_client_key" {
+  value = "${google_container_cluster.secondary.master_auth.0.client_key}"
+}
+
+output "regional_cluster_ca_certificate" {
+  value = "${google_container_cluster.secondary.master_auth.0.cluster_ca_certificate}"
+}
+
+##############################################################
+# End of the GKE regional cluster example
 ##############################################################
 
 # Start GCP KMS resources
