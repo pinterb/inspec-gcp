@@ -19,6 +19,7 @@ module Inspec::Resources
       super(opts)
       @project = opts[:project]
       @zone = opts[:zone]
+      @region = opts[:region]
     end
 
     # FilterTable setup
@@ -32,7 +33,10 @@ module Inspec::Resources
       cluster_rows = []
       catch_gcp_errors do
         # below seemingly doesn't provide pagination
-        @clusters = @gcp.gcp_client(Google::Apis::ContainerV1::ContainerService).list_zone_clusters(@project, @zone)
+        zone = (@zone.nil? ? '-' : @zone)
+        location = (@region.nil? ? zone : @region)
+        parent = "projects//#{@project}locations/#{location}"
+        @clusters = @gcp.gcp_client(Google::Apis::ContainerV1::ContainerService).list_project_location_clusters(parent)
       end
       return [] if !@clusters || !@clusters.clusters
       @clusters.clusters.map do |cluster|
