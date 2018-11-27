@@ -73,7 +73,7 @@ module GCPInspecConfig
       :gcp_kube_cluster_master_pass => Passgen::generate(length: 20, uppercase: true, lowercase: true, symbols: true, digits: true),
       :gcp_kube_nodepool_name => "default-pool",
       :gcp_kube_regional_cluster_name => "gcp-inspec-kube-regional-cluster",
-      :gcp_kube_cluster_region => "europe-west2",
+      :gcp_kube_cluster_region => "us-central1",
       :gcp_inspec_user_email => "user:chef@example.com",
       :gcp_kms_key_ring_policy_name => "gcp-inspec-kms-key-ring-#{add_random_string}",
       :gcp_kms_key_ring_binding_member_name => "gcp-inspec-kms-key-ring-#{add_random_string}",

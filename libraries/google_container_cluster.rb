@@ -15,13 +15,25 @@ module Inspec::Resources
         its('status') { should eq 'in_use' }
         ...
       end
+
+      OR
+
+      describe google_container_cluster(project: 'chef-inspec-gcp', region: 'europe-west2', name: 'cluster-name') do
+        it { should exist }
+        its('name') { should eq 'inspec-test' }
+        its('status') { should eq 'in_use' }
+        ...
+      end
     "
     def initialize(opts = {})
       # Call the parent class constructor
       super(opts)
       @display_name = opts[:name]
+      region = opts[:region]
       catch_gcp_errors do
-        @cluster = @gcp.gcp_client(Google::Apis::ContainerV1beta1::ContainerService).get_zone_cluster(opts[:project], opts[:zone], opts[:name])
+        location = (region.nil? || region.empty? ? opts[:zone] : region)
+        parent = format("projects/%s/locations/%s/clusters/%s", opts[:project], location, opts[:name])
+        @cluster = @gcp.gcp_client(Google::Apis::ContainerV1::ContainerService).get_project_location_cluster(parent)
         create_resource_methods(@cluster)
       end
     end

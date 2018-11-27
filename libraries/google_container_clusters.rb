@@ -12,6 +12,13 @@ module Inspec::Resources
         it { should exist }
         ...
       end
+
+      OR
+
+      describe google_container_clusters(project: 'chef-inspec-gcp', region: 'europe-west2') do
+        it { should exist }
+        ...
+      end
     "
 
     def initialize(opts = {})
@@ -32,10 +39,10 @@ module Inspec::Resources
     def fetch_data
       cluster_rows = []
       catch_gcp_errors do
-        zone = (@zone.nil? ? '-' : @zone)
-        location = (@region.nil? ? zone : @region)
-        parent = "projects/#{@project}/locations/#{location}"
-        # below seemingly doesn't provide pagination
+        zone = (@zone.nil? || @zone.empty? ? '-' : @zone)
+        location = (@region.nil? || @region.empty? ? zone : @region)
+        # parent = "projects/#{@project}/locations/#{location}"
+        parent = format("projects/%s/locations/%s", @project, location)
         @clusters = @gcp.gcp_client(Google::Apis::ContainerV1::ContainerService).list_project_location_clusters(parent)
       end
       return [] if !@clusters || !@clusters.clusters

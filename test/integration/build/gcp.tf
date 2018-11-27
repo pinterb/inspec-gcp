@@ -60,8 +60,8 @@ variable "gcp_kube_cluster_zone_extra2" {}
 variable "gcp_kube_cluster_master_user" {}
 variable "gcp_kube_cluster_master_pass" {}
 
-variable "gcp_kube_regional_cluster_name" {}
 variable "gcp_kube_cluster_region" {}
+variable "gcp_kube_regional_cluster_name" {}
 
 variable "gcp_kms_key_ring_policy_name" {}
 variable "gcp_kms_key_ring_binding_member_name" {}

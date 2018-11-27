@@ -1,4 +1,4 @@
-title 'GKE Container Cluster Properties'
+title 'GKE Zonal Container Cluster Properties'
 
 gcp_project_id = attribute(:gcp_project_id, default: '', description: 'The GCP project identifier.')
 gcp_kube_cluster_name = attribute(:gcp_kube_cluster_name, default: '', description: 'The GKE cluster name.')
@@ -12,7 +12,7 @@ gcp_kube_cluster_zone_extra2 = attribute(:gcp_kube_cluster_zone_extra2, default:
 control 'gcp-gke-container-cluster-1.0' do
 
   impact 1.0
-  title 'Ensure GKE Container Cluster was built correctly'
+  title 'Ensure GKE Zonal Container Cluster was built correctly'
 
   describe google_container_cluster(project: gcp_project_id, zone: gcp_kube_cluster_zone, name: gcp_kube_cluster_name) do
     it { should exist }
