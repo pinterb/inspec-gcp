@@ -8,7 +8,14 @@ module Inspec::Resources
     desc 'Verifies settings for GCP container node pools in bulk'
 
     example "
-      describe google_container_node_pools(project: 'chef-inspec-gcp', node_pool: 'europe-west2-a', cluster_name: 'inspec-gcp-cluster')
+      describe google_container_node_pools(project: 'chef-inspec-gcp', zone: 'europe-west2-a', cluster_name: 'inspec-gcp-cluster')
+        it { should exist }
+        ...
+      end
+
+      OR
+
+      describe google_container_node_pools(project: 'chef-inspec-gcp', region: 'europe-west2', cluster_name: 'inspec-gcp-cluster')
         it { should exist }
         ...
       end
@@ -19,6 +26,7 @@ module Inspec::Resources
       super(opts)
       @project = opts[:project]
       @zone = opts[:zone]
+      @region = opts[:region]
       @cluster_name = opts[:cluster_name]
     end
 
@@ -31,8 +39,10 @@ module Inspec::Resources
     def fetch_data
       node_pool_rows = []
       catch_gcp_errors do
+        location = (@region.nil? || @region.empty? ? opts[:zone] : @region)
+        parent = format("projects/%s/locations/%s/clusters/%s", @project, location, @cluster_name)
         # no pagination
-        @node_pools = @gcp.gcp_client(Google::Apis::ContainerV1::ContainerService).list_project_zone_cluster_node_pools(@project, @zone, @cluster_name)
+        @node_pools = @gcp.gcp_client(Google::Apis::ContainerV1::ContainerService).list_project_location_cluster_node_pools(parent)
       end
       return [] if !@node_pools || !@node_pools.node_pools
       @node_pools.node_pools.map do |node_pool|

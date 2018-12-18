@@ -14,13 +14,24 @@ module Inspec::Resources
         its('name') { should eq 'inspec-test' }
         ...
       end
+
+      OR
+
+      describe google_container_node_pool(project: 'chef-inspec-gcp', region: 'europe-west2', cluster_name: 'cluster-name', nodepool_name: 'inspec-test') do
+        it { should exist }
+        its('name') { should eq 'inspec-test' }
+        ...
+      end
     "
     def initialize(opts = {})
       # Call the parent class constructor
       super(opts)
       @display_name = opts[:nodepool_name]
+      @region = opts[:region]
       catch_gcp_errors do
-        @nodepool = @gcp.gcp_client(Google::Apis::ContainerV1::ContainerService).get_project_zone_cluster_node_pool(opts[:project], opts[:zone], opts[:cluster_name], opts[:nodepool_name])
+        location = (opts[:region].nil? || opts[:region].empty? ? opts[:zone] : opts[:region])
+        name = format("projects/%s/locations/%s/clusters/%s/nodePools/%s", opts[:project], location, opts[:cluster_name], opts[:nodepool_name])
+        @nodepool = @gcp.gcp_client(Google::Apis::ContainerV1::ContainerService).get_project_location_cluster_node_pool(name)
         create_resource_methods(@nodepool)
       end
     end
@@ -37,10 +48,34 @@ module Inspec::Resources
       @nodepool.management.auto_upgrade
     end
 
+    def has_preemptible_nodes?
+      return false if !defined?(@nodepool.config.preemptible)
+      return false if @nodepool.config.preemptible.nil?
+      @nodepool.config.preemptible
+    end
+
     def config_image_type
       return '' if !defined?(@nodepool.config.image_type)
       return '' if @nodepool.config.image_type.nil?
       @nodepool.config.image_type
+    end
+
+    def config_machine_type
+      return '' if !defined?(@nodepool.config.machine_type)
+      return '' if @nodepool.config.machine_type.nil?
+      @nodepool.config.machine_type
+    end
+
+    def config_disk_size_gb
+      return 0 if !defined?(@nodepool.config.disk_size_gb)
+      return 0 if @nodepool.config.disk_size_gb.nil?
+      @nodepool.config.disk_size_gb
+    end
+
+    def config_local_ssd_count
+      return 0 if !defined?(@nodepool.config.local_ssd_count)
+      return 0 if @nodepool.config.local_ssd_count.nil?
+      @nodepool.config.local_ssd_count
     end
 
     def config_service_account
@@ -53,6 +88,18 @@ module Inspec::Resources
       return false if !defined?(@nodepool.config.oauth_scopes)
       return false if @nodepool.config.oauth_scopes.nil?
       @nodepool.config.oauth_scopes
+    end
+
+    def autoscale_min_node_count
+      return 0 if !defined?(@nodepool.autoscaling.min_node_count)
+      return 0 if @nodepool.autoscaling.min_node_count.nil?
+      @nodepool.autoscaling.min_node_count
+    end
+
+    def autoscale_max_node_count
+      return 0 if !defined?(@nodepool.autoscaling.max_node_count)
+      return 0 if @nodepool.autoscaling.max_node_count.nil?
+      @nodepool.autoscaling.max_node_count
     end
 
     def exists?
